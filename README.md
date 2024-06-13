@@ -23,7 +23,7 @@ This mounts your IMU to `/dev/sensors/razor`. Re-plug in your IMU to take effect
 ## Building
 
 ```bash
-git clone https://github.com/airacingtech/razor-imu-ros2.git
+git https://github.com/rilesc555/razor-imu-ros2-humble.git
 cd razor-imu-ros2
 rosdep install --from-paths razor_imu_ros2/ --ignore-src -y -r
 source /opt/ros/$ROS_DISTRO/setup.bash

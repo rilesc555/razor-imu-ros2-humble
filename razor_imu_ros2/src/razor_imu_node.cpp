@@ -20,7 +20,7 @@
 #include <regex>
 
 #include "razor_imu_ros2/razor_imu_node.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
 
 namespace razor_imu_ros2
@@ -34,14 +34,15 @@ void RazorImuNode::command(
   const std::string & command, const double & val,
   const uint32_t & delay_ms = 1000)
 {
-  RCLCPP_INFO(get_logger(), command + std::to_string(val));
+  // RCLCPP_INFO(get_logger(), command + std::to_string(val));
+  RCLCPP_INFO(get_logger(), "%s", (command + std::to_string(val)).c_str());
   driver_->port()->async_send(str_to_bytes(command + std::to_string(val) + '\r'));
   sleep(delay_ms / 1000.0);
 }
 
 void RazorImuNode::command(const std::string & command, const uint32_t & delay_ms = 1000)
 {
-  RCLCPP_INFO(get_logger(), command);
+  RCLCPP_INFO(get_logger(), "%s", (command).c_str());
   driver_->port()->async_send(str_to_bytes(command + '\r'));
   sleep(delay_ms / 1000.0);
 }
@@ -71,18 +72,34 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
 {
   // Create pub
   m_imu_pub_ = create_publisher<Imu>("imu", rclcpp::QoS{10});
+
   m_imu_.header.frame_id = declare_parameter("frame_id", "imu");
+  
   const auto avc = declare_parameter("angular_velocity_covariance", std::vector<double>{});
+  
   std::copy(avc.begin(), avc.end(), m_imu_.angular_velocity_covariance.begin());
   const auto oc = declare_parameter("orientation_covariance", std::vector<double>{});
   std::copy(oc.begin(), oc.end(), m_imu_.orientation_covariance.begin());
-  m_enable_offset_ = declare_parameter("enable_offset").get<bool>();
+  
+  this->declare_parameter<bool>("enable_offset", true);
+  m_enable_offset_ = this->get_parameter("enable_offset").as_bool();
+
   double rpy_offset[3] {0.0, 0.0, 0.0};
   if (m_enable_offset_) {
     static constexpr double DEG2RAD = M_PI / 180.0;
-    rpy_offset[0] = declare_parameter("roll_offset_deg").get<double>() * DEG2RAD;
-    rpy_offset[1] = declare_parameter("pitch_offset_deg").get<double>() * DEG2RAD;
-    rpy_offset[2] = declare_parameter("yaw_offset_deg").get<double>() * DEG2RAD;
+
+    this->declare_parameter<double>("roll_offset_deg", 0.0);
+    // rpy_offset[0] = declare_parameter("roll_offset_deg").get<double>() * DEG2RAD;
+    rpy_offset[0] = this->get_parameter("roll_offset_deg").as_double() * DEG2RAD;
+
+    this->declare_parameter<double>("pitch_offset_deg", 0.0);
+    // rpy_offset[1] = declare_parameter("pitch_offset_deg").get<double>() * DEG2RAD;
+    rpy_offset[1] = this->get_parameter("pitch_offset_deg").as_double() * DEG2RAD;
+
+    this->declare_parameter<double>("yaw_offset_deg", 0.0);
+    // rpy_offset[2] = declare_parameter("yaw_offset_deg").get<double>() * DEG2RAD;
+    rpy_offset[2] = this->get_parameter("yaw_offset_deg").as_double() * DEG2RAD;
+
     m_q_offset_.setRPY(rpy_offset[0], rpy_offset[1], rpy_offset[2]);
   }
   m_zero_gravity_ = declare_parameter("zero_gravity").get<bool>();

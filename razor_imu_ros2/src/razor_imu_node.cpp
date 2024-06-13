@@ -149,6 +149,7 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
 
     // Set manetometer calibrations
     this->declare_parameter<bool>("calibration_magn_use_extended", false);
+
     if (this->get_parameter("calibration_magn_use_extended").as_bool()) {
       this->declare_parameter<std::vector<double>>("magn_ellipsoid_center", std::vector<double>{});
       const auto magn_ellipsoid_center = this->get_parameter("magn_ellipsoid_center").as_double_array();
@@ -169,18 +170,27 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
       command("#ctzY", magn_ellipsoid_transform[7]);
       command("#ctzZ", magn_ellipsoid_transform[8]);
     } else {
-      command("#cmxm", declare_parameter("magn_x_min").get<double>());
-      command("#cmxM", declare_parameter("magn_x_max").get<double>());
-      command("#cmym", declare_parameter("magn_y_min").get<double>());
-      command("#cmyM", declare_parameter("magn_y_max").get<double>());
-      command("#cmzm", declare_parameter("magn_z_min").get<double>());
-      command("#cmzM", declare_parameter("magn_z_max").get<double>());
+      this->declare_parameter<double>("magn_x_min", -600.0);
+      this->declare_parameter<double>("magn_x_max", 600.0);
+      this->declare_parameter<double>("magn_y_min", -600.0);
+      this->declare_parameter<double>("magn_y_max", 600.0);
+      this->declare_parameter<double>("magn_z_min", -600.0);
+      this->declare_parameter<double>("magn_z_max", 600.0);
+      command("#cmxm", this->get_parameter("magn_x_min").as_double());
+      command("#cmxM", this->get_parameter("magn_x_max").as_double());
+      command("#cmym", this->get_parameter("magn_y_min").as_double());
+      command("#cmyM", this->get_parameter("magn_y_max").as_double());
+      command("#cmzm", this->get_parameter("magn_z_min").as_double());
+      command("#cmzM", this->get_parameter("magn_z_max").as_double());
     }
 
     // Set gyro calibrations
-    command("#cgx", declare_parameter("gyro_average_offset_x").get<double>());
-    command("#cgy", declare_parameter("gyro_average_offset_y").get<double>());
-    command("#cgz", declare_parameter("gyro_average_offset_z").get<double>());
+    this->declare_parameter<double>("gyro_average_offset_x", 0.0);
+    this->declare_parameter<double>("gyro_average_offset_y", 0.0);
+    this->declare_parameter<double>("gyro_average_offset_z", 0.0);
+    command("#cgx", get_parameter("gyro_average_offset_x").as_double());
+    command("#cgy", get_parameter("gyro_average_offset_y").as_double());
+    command("#cgz", get_parameter("gyro_average_offset_z").as_double());
   }
   // Start outputing
   command("#o1");
@@ -241,7 +251,7 @@ void RazorImuNode::loop_thread()
       msg.linear_acceleration.y *= ACCEL_FACTOR * -1.0;
       msg.linear_acceleration.z *= ACCEL_FACTOR;
       tf2::Vector3 v_l;
-      fromMsg(msg.linear_acceleration, v_l);
+      razor_imu_ros2::fromMsg(msg.linear_acceleration, v_l);
 
       ss >> msg.angular_velocity.y;
       ss >> msg.angular_velocity.x;
@@ -249,10 +259,10 @@ void RazorImuNode::loop_thread()
       msg.angular_velocity.y *= -1.0;
       msg.angular_velocity.z *= -1.0;
       tf2::Vector3 v_a;
-      fromMsg(msg.angular_velocity, v_a);
+      razor_imu_ros2::fromMsg(msg.angular_velocity, v_a);
       if (m_enable_offset_) {
-        msg.linear_acceleration = toMsg(tf2::quatRotate(m_q_offset_, v_l));
-        msg.angular_velocity = toMsg(tf2::quatRotate(m_q_offset_, v_a));
+        msg.linear_acceleration = razor_imu_ros2::toMsg(tf2::quatRotate(m_q_offset_, v_l));
+        msg.angular_velocity = razor_imu_ros2::toMsg(tf2::quatRotate(m_q_offset_, v_a));
       }
 
       if (m_zero_gravity_) {

@@ -110,9 +110,9 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("serial_port", "/dev/ttyUSB0");
   const std::string serial_port = this->get_parameter("serial_port").as_string();
   
-  this->declare_parameter<uint32_t>("baud_rate", 57600);
+  this->declare_parameter<int>("baud_rate", 57600);
   // const uint32_t baud_rate = declare_parameter("baud_rate").get<uint32_t>();
-  const uint32_t baud_rate = this->get_parameter("baud_rate").as_uint();
+  const uint32_t baud_rate = this->get_parameter("baud_rate").as_int();
 
   
   const auto fc = drivers::serial_driver::FlowControl::NONE;
@@ -130,20 +130,29 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
   // Set output mode RPYAG
   command("#ox");
 
-  if (declare_parameter("send_calibration").get<bool>()) {
+  this->declare_parameter<bool>("send_calibration", false);
+  if (this->get_parameter("send_calibration").as_bool()) {
     // Set accel calibrations
-    command("#caxm", declare_parameter("accel_x_min").get<double>());
-    command("#caxM", declare_parameter("accel_x_max").get<double>());
-    command("#caym", declare_parameter("accel_y_min").get<double>());
-    command("#cayM", declare_parameter("accel_y_max").get<double>());
-    command("#cazm", declare_parameter("accel_z_min").get<double>());
-    command("#cazM", declare_parameter("accel_z_max").get<double>());
+
+    this->declare_parameter<double>("accel_x_min", -256.0);
+    this->declare_parameter<double>("accel_x_max", 256.0);
+    this->declare_parameter<double>("accel_y_min", -256.0);
+    this->declare_parameter<double>("accel_y_max", 256.0);
+    this->declare_parameter<double>("accel_z_min", -256.0);
+    this->declare_parameter<double>("accel_z_max", 256.0);
+    command("#caxm", this->get_parameter("accel_x_min").as_double());
+    command("#caxM", this->get_parameter("accel_x_max").as_double());
+    command("#caym", this->get_parameter("accel_y_min").as_double());
+    command("#cayM", this->get_parameter("accel_y_max").as_double());
+    command("#cazm", this->get_parameter("accel_z_min").as_double());
+    command("#cazM", this->get_parameter("accel_z_max").as_double());
 
     // Set manetometer calibrations
-    if (declare_parameter("calibration_magn_use_extended").get<bool>()) {
-      const auto magn_ellipsoid_center = declare_parameter(
-        "magn_ellipsoid_center",
-        std::vector<double>{});
+    this->declare_parameter<bool>("calibration_magn_use_extended", false);
+    if (this->get_parameter("calibration_magn_use_extended").as_bool()) {
+      this->declare_parameter<std::vector<double>>("magn_ellipsoid_center", std::vector<double>{});
+      const auto magn_ellipsoid_center = this->get_parameter("magn_ellipsoid_center").as_double_array();
+
       command("#ccx", magn_ellipsoid_center[0]);
       command("#ccy", magn_ellipsoid_center[1]);
       command("#ccz", magn_ellipsoid_center[2]);

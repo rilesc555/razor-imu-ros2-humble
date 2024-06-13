@@ -102,11 +102,19 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
 
     m_q_offset_.setRPY(rpy_offset[0], rpy_offset[1], rpy_offset[2]);
   }
-  m_zero_gravity_ = declare_parameter("zero_gravity").get<bool>();
+  this->declare_parameter<bool>("zero_gravity", false);
+  // m_zero_gravity_ = declare_parameter("zero_gravity").get<bool>();
+  m_zero_gravity_ = this->get_parameter("zero_gravity").as_bool();
 
   // Open serial port
-  const std::string serial_port = declare_parameter("serial_port").get<std::string>();
-  const uint32_t baud_rate = declare_parameter("baud_rate").get<uint32_t>();
+  this->declare_parameter<std::string>("serial_port", "/dev/ttyUSB0");
+  const std::string serial_port = this->get_parameter("serial_port").as_string();
+  
+  this->declare_parameter<uint32_t>("baud_rate", 57600);
+  // const uint32_t baud_rate = declare_parameter("baud_rate").get<uint32_t>();
+  const uint32_t baud_rate = this->get_parameter("baud_rate").as_uint();
+
+  
   const auto fc = drivers::serial_driver::FlowControl::NONE;
   const auto pt = drivers::serial_driver::Parity::NONE;
   const auto sb = drivers::serial_driver::StopBits::ONE;

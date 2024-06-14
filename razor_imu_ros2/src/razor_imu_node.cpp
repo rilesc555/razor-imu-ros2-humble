@@ -110,7 +110,7 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("serial_port", "/dev/ttyUSB0");
   const std::string serial_port = this->get_parameter("serial_port").as_string();
   
-  this->declare_parameter<int>("baud_rate", 57600);
+  this->declare_parameter<int>("baud_rate", 115200);
   // const uint32_t baud_rate = declare_parameter("baud_rate").get<uint32_t>();
   const uint32_t baud_rate = this->get_parameter("baud_rate").as_int();
 

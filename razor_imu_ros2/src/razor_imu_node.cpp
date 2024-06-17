@@ -107,7 +107,7 @@ RazorImuNode::RazorImuNode(const rclcpp::NodeOptions & options)
   m_zero_gravity_ = this->get_parameter("zero_gravity").as_bool();
 
   // Open serial port
-  this->declare_parameter<std::string>("serial_port", "/dev/ttyUSB0");
+  this->declare_parameter<std::string>("serial_port", "/dev/tty.usbserial-140");
   const std::string serial_port = this->get_parameter("serial_port").as_string();
   
   this->declare_parameter<int>("baud_rate", 115200);

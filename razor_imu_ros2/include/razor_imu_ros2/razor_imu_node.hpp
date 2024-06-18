@@ -33,6 +33,7 @@ class RazorImuNode : public rclcpp::Node
 {
 public:
   explicit RazorImuNode(const rclcpp::NodeOptions & options);
+  static void sigintHandler(int sig);
 
 protected:
   void loop_thread();

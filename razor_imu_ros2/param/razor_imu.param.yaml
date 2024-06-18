@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
-    serial_port: "/dev/tty.usbserial-140"
-    baud_rate: 115200
+    serial_port: "/dev/sensors/razor"
+    baud_rate: 57600
     frame_id: imu
 
     # Configure offset of IMU with respect to REP 103 configuration

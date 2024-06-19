@@ -3,8 +3,6 @@
 # Change directory to /src/razor-imu-ros2-humble/
 cd ./src/razor-imu-ros2-humble/
 
-rosdep init && rosdep update
-
 # Use rosdep to install dependencies
 rosdep install --from-paths razor_imu_ros2/ --ignore-src -y -r
 
